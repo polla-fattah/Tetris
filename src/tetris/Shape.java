@@ -18,9 +18,9 @@ import java.util.Random;
  */
 public class Shape {
     public static final int SHAPE_SIZE = 3;
-    public ArrayList<ArrayList<Color>> shapeMatrix;
-    int xShape;
-    int yShape;
+    private ArrayList<ArrayList<Color>> shapeMatrix;
+    private int xShape, xLoc;
+    private int yShape, yLoc;
     public Shape(){
 	shapeMatrix = new ArrayList<>();
 	for(int i = 0; i < SHAPE_SIZE; i++)
@@ -28,8 +28,11 @@ public class Shape {
     }
     
     public void nextShape(){
+	yLoc = 0;
+	xLoc = (Bord.X_BLOCK_NO - 2) / 2;
+
 	yShape = Bord.FIRST_Y;
-	xShape = Bord.FIRAT_X + Bord.BLOCK_SIZE * ((Bord.X_BLOCK_NO - 2) / 2);
+	xShape = Bord.FIRAT_X + Bord.BLOCK_SIZE * xLoc;
 	int shapeNo = 8;
 	
 	Random rand = new Random();
@@ -158,7 +161,12 @@ public class Shape {
 	
     }
     public void proceed(){
-	yShape += Bord.BLOCK_SIZE;
+
+	if(Bord.Y_BLOCK_NO - SHAPE_SIZE == yLoc ){
+	    nextShape();
+	}
+ 	yShape += Bord.BLOCK_SIZE;
+	yLoc++;
     }
     public void paintShape(Graphics screen2D){
 	for(int x = 0; x < SHAPE_SIZE; x++){
@@ -182,7 +190,8 @@ public class Shape {
 	    return;
 	if(! edgeIsNull(0) && xShape < Bord.FIRAT_X + Bord.BLOCK_SIZE)
 	    return;
-	this.xShape -=  Bord.BLOCK_SIZE;
+	xShape -=  Bord.BLOCK_SIZE;
+	xLoc--;
     }
 
     void moveRight() {
@@ -190,13 +199,14 @@ public class Shape {
 	    return;
 	if(! edgeIsNull(2) && xShape > Bord.LAST_X - Bord.BLOCK_SIZE * 4)
 	    return;
-	this.xShape +=  Bord.BLOCK_SIZE;
+	
+	xShape +=  Bord.BLOCK_SIZE;
+	xLoc++;
     }
 
     void rotate() {
 	// Consider all squares one by one
-        for (int x = 0; x < SHAPE_SIZE / 2; x++)
-        {
+        for (int x = 0; x < SHAPE_SIZE / 2; x++){
             // Consider elements in group of 4 in 
             // current square
             for (int y = x; y < SHAPE_SIZE-x-1; y++){
@@ -219,7 +229,19 @@ public class Shape {
                 shapeMatrix.get(SHAPE_SIZE-1-y).set(x, temp);
             }
         }
+	
+	if(! edgeIsNull(0) && xShape < Bord.FIRAT_X ){
+	    xShape +=  Bord.BLOCK_SIZE;
+	    xLoc++;
+	}
+	if(! edgeIsNull(2) && xShape > Bord.LAST_X - Bord.BLOCK_SIZE * 3){
+	    xShape -=  Bord.BLOCK_SIZE;
+	    xLoc--;
+	}
 
+	
+
+	
     }
 
     private boolean edgeIsNull(int x) {
